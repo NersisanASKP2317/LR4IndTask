@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head> 
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Контейнер обеспечения безопасности компьютера при угрозе заражения от посещения неблагонадежных сайтов</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style> 
+     /* Сброс отступов у всех элементов */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    /* Основной фон страницы */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    /* Основной контейнер для содержимого */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    /* Стили для заголовка */
+    .header {
+      text-align: center;
+      padding: 30px 20px;
+      background: #ffffff;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border: 1px solid #e0e0e0;
+    }
+    /* Стили для заголовка h1 */
+    .header h1 {
+      color: #1a1a2e;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+    /* Стили для текста в заголовке */
+    .header h1 span {
+      color: #c0392b;
+    }
+    /* Стили для параграфа в заголовке */
+    .header p {
+      color: #666;
+      font-size: 14px;
+    }
+    /* Сетка для статистики */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    /* Стили для карточек статистики */
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: transform 0.2s;
+      border: 1px solid #e0e0e0;
+    }
+    /* Эффект при наведении на карточку */
+    .stat-card:hover {
+      transform: translateY(-3px);
+    }
+    /* Стили для чисел в карточках */
+    .stat-card .number {
+      font-size: 48px;
+      font-weight: bold;
+    }
+    /* Стили для меток в карточках */
+    .stat-card .label {
+      color: #666;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    /* Цвета для разных типов карточек */
+    .stat-card.total .number { color: #2980b9; }
+    .stat-card.blocked .number { color: #c0392b; }
+    .stat-card.allowed .number { color: #27ae60; }
+    .stat-card.rate .number { color: #e67e22; }
+    /* Стили для формы добавления URL */
+    .add-form {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border: 1px solid #e0e0e0;
+    }
+    /* Стили для заголовка формы */
+    .add-form h3 {
+      margin-bottom: 20px;
+      color: #1a1a2e;
+    }
+    /* Стили для группы элементов формы */
+    .form-group {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    /* Стили для полей ввода и выпадающих списков */
+    .form-group input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+    /* Эффект при фокусе на поле ввода */
+    .form-group input:focus {
+      outline: none;
+      border-color: #2980b9;
+    }
+    /* Стили для выпадающих списков */
+    .form-group select {
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+      background: white;
+      cursor: pointer;
+    }
+    /* Стили для кнопок */
+    .btn {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+    /* Стили для кнопок при наведении */
+    .btn-primary {
+      background: #2980b9;
+      color: white;
+    }
+    /* Стили для кнопок при наведении */
+    .btn-primary:hover {
+      background: #1c638e;
+    }
+    /* Стили для кнопок */
+    .btn-danger {
+      background: #c0392b;
+      color: white;
+    }
+    /* Стили для кнопок при наведении */
+    .btn-danger:hover {
+      background: #a93226;
+    }
+    
+    .btn-success {
+      background: #27ae60;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #1e8449;
+    }
+    /* Стили для таблицы с URL */
+    .url-table {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 30px;
+      overflow-x: auto;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border: 1px solid #e0e0e0;
+    }
+    /* Стили для заголовка таблицы */
+    .url-table h3 {
+      margin-bottom: 20px;
+      color: #1a1a2e;
+    }
+    /* Стили для таблицы */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    /* Стили для ячеек таблицы */
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    /* Стили для заголовков таблицы */
+    th {
+      background: #f8f9fa;
+      font-weight: 600;
+      color: #333;
+    }
+    /* Стили для строк таблицы при наведении */
+    .status-blocked {
+      color: #c0392b;
+      font-weight: bold;
+    }
+
+    .status-allowed {
+      color: #27ae60;
+      font-weight: bold;
+    }
+    /* Стили для кнопки удаления */
+    .delete-btn {
+      background: #c0392b;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    .delete-btn:hover {
+      background: #a93226;
+    }
+    /* Сетка для графиков */
+    .charts-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 25px;
+      margin-bottom: 30px;
+    }
+    /* Стили для карточек с графиками */
+    .chart-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border: 1px solid #e0e0e0;
+    }
+    /* Стили для заголовков графиков */
+    .chart-card h3 {
+      margin-bottom: 20px;
+      color: #1a1a2e;
+      text-align: center;
+    }
+    /* Стили для графиков */
+    canvas {
+      max-height: 300px;
+      width: 100%;
+    }
+    /* Стили для контейнера с кнопками действий */
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    /* Стили для подвала */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      color: #888;
+      font-size: 12px;
+    }
+    /* Адаптивные стили для мобильных устройств */
+    @media (max-width: 768px) {
+      .charts-container {
+        grid-template-columns: 1fr;
+      }
+      .form-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+     <!-- ШАПКА ПРИЛОЖЕНИЯ -->
+    <div class="header">
+      <h1>Контейнер защиты <span>УБИ.167</span></h1>
+      <p>Защита компьютера от заражения при посещении неблагонадежных сайтов</p>
+    </div>
+    <!-- СТАТИСТИКА -->
+    <div class="stats-grid">
+      <div class="stat-card total">
+        <div class="number" id="totalCount">0</div>
+        <div class="label">Всего запросов</div>
+      </div>
+      <div class="stat-card allowed">
+        <div class="number" id="allowedCount">0</div>
+        <div class="label">Разрешено</div>
+      </div>
+      <div class="stat-card blocked">
+        <div class="number" id="blockedCount">0</div>
+        <div class="label">Заблокировано</div>
+      </div>
+      <div class="stat-card rate">
+        <div class="number" id="blockRate">0%</div>
+        <div class="label">Доля блокировок</div>
+      </div>
+    </div>
+    <!-- ФОРМА ДОБАВЛЕНИЯ URL -->
+    <div class="add-form">
+      <h3>Добавить URL для проверки</h3>
+      <div class="form-group">
+        <input type="text" id="newUrl" placeholder="Введите URL для проверки (например, http://example.com)" value="http://">
+        <select id="urlType">
+          <option value="check">Только проверить</option>
+          <option value="whitelist">Добавить в белый список (всегда разрешён)</option>
+          <option value="blacklist">Добавить в чёрный список (всегда блокируется)</option>
+        </select>
+        <button class="btn btn-primary" onclick="checkUrl()">Проверить / Добавить</button>
+      </div>
+      <div style="margin-top: 15px; font-size: 13px; color: #666;">
+        <strong>Примечание:</strong> URL будет автоматически проверен на наличие вредоносного контента.
+        Если выбран "Только проверить", URL не будет сохранён в базе данных.
+      </div>
+    </div>
+    <!-- ТАБЛИЦА С ИСТОРИЕЙ ПРОВЕРОК -->
+
+    <div class="url-table">
+      <h3>Список проверенных URL</h3>
+      <div style="margin-bottom: 15px;">
+        <button class="btn btn-danger" onclick="clearAll()"> Очистить всю историю</button>
+        <button class="btn btn-success" onclick="loadDemoData()" style="margin-left: 10px;"> Загрузить демо-данные</button>
+      </div>
+      <div id="tableContainer">
+        <table id="urlTable">
+          <thead>
+            <tr><th>URL</th><th>Статус</th><th>Тип</th><th>Дата</th><th>Действие</th></tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="5" style="text-align: center;">Нет данных. Добавьте URL выше или загрузите демо-данные.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- ГРАФИКИ -->
+    <div class="charts-container">
+      <div class="chart-card">
+        <h3> Распределение запросов</h3>
+        <canvas id="pieChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3> Тренд блокировок</h3>
+        <canvas id="lineChart"></canvas>
+      </div>
+    </div>
+    <!-- КНОПКИ ДЕЙСТВИЙ -->
+    <div class="action-buttons">
+      <button class="btn btn-primary" onclick="updateAllCharts()"> Обновить графики</button>
+    </div>
+    <!-- ПОДВАЛ -->
+    <div class="footer">
+      <p>УБИ.167 - Контейнер обеспечения безопасности компьютера при угрозе заражения от посещения неблагонадёжных сайтов</p>
+      <p>Нефтегазовая компания | Версия 1.0</p>
+    </div>
+  </div>
+  <!-- СКРИПТЫ -->
+  <script>
+    let whitelist = ["google.com", "yandex.ru", "github.com", "stackoverflow.com"];
+    let blacklist = ["bad-site.ru", "phishing.com", "malware.net", "exploit.com"];
+    let urlHistory = [];
+    let pieChart = null;
+    let lineChart = null;
+    // ЗАГРУЗКА ДАННЫХ ИЗ LOCALSTORAGE
+    function loadData() {
+      const savedWhitelist = localStorage.getItem('ub167_whitelist');
+      const savedBlacklist = localStorage.getItem('ub167_blacklist');
+      const savedHistory = localStorage.getItem('ub167_history');
+
+      if (savedWhitelist) whitelist = JSON.parse(savedWhitelist);
+      if (savedBlacklist) blacklist = JSON.parse(savedBlacklist);
+      if (savedHistory) urlHistory = JSON.parse(savedHistory);
+
+      updateAllStats();
+      updateTable();
+      updateCharts();
+    }
+    // СОХРАНЕНИЕ ДАННЫХ В LOCALSTORAGE
+    function saveData() {
+      localStorage.setItem('ub167_whitelist', JSON.stringify(whitelist));
+      localStorage.setItem('ub167_blacklist', JSON.stringify(blacklist));
+      localStorage.setItem('ub167_history', JSON.stringify(urlHistory));
+    }
+    // ПРОВЕРКА URL НА НАЛИЧИЕ В СПИСКАХ
+    function isBlocked(url) {
+      const urlLower = url.toLowerCase();
+
+      for (let domain of whitelist) {
+        if (urlLower.includes(domain.toLowerCase())) {
+          return { blocked: false, reason: `домен ${domain} в белом списке`, type: 'whitelist' };
+        }
+      }
+
+      for (let domain of blacklist) {
+        if (urlLower.includes(domain.toLowerCase())) {
+          return { blocked: true, reason: `домен ${domain} в чёрном списке`, type: 'blacklist' };
+        }
+      }
+
+      return { blocked: false, reason: 'не в списках, разрешён по умолчанию', type: 'default' };
+    }
+    // ДОБАВЛЕНИЕ URL В БЕЛЫЙ СПИСОК
+    function addToWhitelist(url) {
+      const domain = extractDomain(url);
+      if (!whitelist.includes(domain) && domain) {
+        whitelist.push(domain);
+        saveData();
+        return true;
+      }
+      return false;
+    }
+    // ДОБАВЛЕНИЕ URL В ЧЁРНЫЙ СПИСОК
+    function addToBlacklist(url) {
+      const domain = extractDomain(url);
+      if (!blacklist.includes(domain) && domain) {
+        blacklist.push(domain);
+        saveData();
+        return true;
+      }
+      return false;
+    }
+    // ИЗВЛЕЧЕНИЕ ДОМЕНА ИЗ URL
+    function extractDomain(url) {
+      try {
+        let hostname = new URL(url).hostname;
+        return hostname.replace(/^www\./, '');
+      } catch (e) {
+        let match = url.match(/^(?:https?:\/\/)?(?:www\.)?([^\/:]+)/i);
+        return match ? match[1] : url;
+      }
+    }
+    // ПРОВЕРКА URL И ОБНОВЛЕНИЕ ИНТЕРФЕЙСА
+    function checkUrl() {
+      const urlInput = document.getElementById('newUrl');
+      let url = urlInput.value.trim();
+      const type = document.getElementById('urlType').value;
+
+      if (!url) {
+        alert('Введите URL');
+        return;
+      }
+
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'http://' + url;
+      }
+
+      let result;
+
+      if (type === 'whitelist') {
+        addToWhitelist(url);
+        result = { blocked: false, reason: 'добавлен в белый список', type: 'whitelist_added' };
+      } else if (type === 'blacklist') {
+        addToBlacklist(url);
+        result = { blocked: true, reason: 'добавлен в чёрный список', type: 'blacklist_added' };
+      } else {
+        result = isBlocked(url);
+      }
+      // СОЗДАНИЕ ЗАПИСИ И ОБНОВЛЕНИЕ ИНТЕРФЕЙСА
+      const record = {
+        id: Date.now(),
+        url: url,
+        status: result.blocked ? 'ЗАБЛОКИРОВАНО' : 'РАЗРЕШЕНО',
+        reason: result.reason,
+        timestamp: new Date().toLocaleString()
+      };
+      
+      urlHistory.unshift(record);
+      if (urlHistory.length > 100) urlHistory = urlHistory.slice(0, 100);
+
+      saveData();
+      updateAllStats();
+      updateTable();
+      updateCharts();
+
+      urlInput.value = 'http://';
+      urlInput.focus();
+    }
+    // ОБНОВЛЕНИЕ СТАТИСТИКИ
+    function getStats() {
+      const total = urlHistory.length;
+      const blocked = urlHistory.filter(r => r.status === 'ЗАБЛОКИРОВАНО').length;
+      const allowed = total - blocked;
+      const rate = total > 0 ? Math.round((blocked / total) * 100) : 0;
+      return { total, blocked, allowed, rate };
+    }
+    // ОБНОВЛЕНИЕ ВСЕХ СТАТИСТИК
+    function updateAllStats() {
+      const stats = getStats();
+      document.getElementById('totalCount').textContent = stats.total;
+      document.getElementById('allowedCount').textContent = stats.allowed;
+      document.getElementById('blockedCount').textContent = stats.blocked;
+      document.getElementById('blockRate').textContent = stats.rate + '%';
+    }
+    // ОБНОВЛЕНИЕ ТАБЛИЦЫ
+    function updateTable() {
+      const tbody = document.getElementById('tableBody');
+
+      if (urlHistory.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Нет данных. Добавьте URL выше или загрузите демо-данные.</td></tr>';
+        return;
+      }
+      
+      let html = '';
+      for (let record of urlHistory.slice(0, 30)) {
+        const statusClass = record.status === 'ЗАБЛОКИРОВАНО' ? 'status-blocked' : 'status-allowed';
+        html += `
+          <tr>
+            <td style="word-break: break-all; max-width: 300px;">${escapeHtml(record.url)}</td>
+            <td class="${statusClass}">${record.status}</td>
+            <td>${escapeHtml(record.reason)}</td>
+            <td>${record.timestamp}</td>
+            <td><button class="delete-btn" onclick="deleteRecord(${record.id})"></button></td>
+          </tr>
+        `;
+      }
+      tbody.innerHTML = html;
+    }
+    // УДАЛЕНИЕ ЗАПИСИ ИЗ ИСТОРИИ
+    function deleteRecord(id) {
+      urlHistory = urlHistory.filter(r => r.id !== id);
+      saveData();
+      updateAllStats();
+      updateTable();
+      updateCharts();
+    }
+    // ОЧИСТКА ВСЕЙ ИСТОРИИ
+    function clearAll() {
+      if (confirm('Удалить всю историю и сбросить списки?')) {
+        urlHistory = [];
+        whitelist = ["google.com", "yandex.ru", "github.com", "stackoverflow.com"];
+        blacklist = ["bad-site.ru", "phishing.com", "malware.net", "exploit.com"];
+        saveData();
+        updateAllStats();
+        updateTable();
+        updateCharts();
+      }
+    }
+    // ЗАГРУЗКА ДЕМО-ДАННЫХ
+    function loadDemoData() {
+      const demoUrls = [
+        { url: "https://google.com/search", status: "РАЗРЕШЕНО", reason: "домен google.com в белом списке" },
+        { url: "https://yandex.ru", status: "РАЗРЕШЕНО", reason: "домен yandex.ru в белом списке" },
+        { url: "http://bad-site.ru", status: "ЗАБЛОКИРОВАНО", reason: "домен bad-site.ru в чёрном списке" },
+        { url: "https://github.com/user/repo", status: "РАЗРЕШЕНО", reason: "домен github.com в белом списке" },
+        { url: "http://phishing.com/login", status: "ЗАБЛОКИРОВАНО", reason: "домен phishing.com в чёрном списке" },
+        { url: "https://stackoverflow.com/questions", status: "РАЗРЕШЕНО", reason: "домен stackoverflow.com в белом списке" },
+        { url: "http://malware.net", status: "ЗАБЛОКИРОВАНО", reason: "домен malware.net в чёрном списке" },
+        { url: "https://example.com", status: "РАЗРЕШЕНО", reason: "не в списках, разрешён по умолчанию" },
+        { url: "http://exploit.com/script", status: "ЗАБЛОКИРОВАНО", reason: "домен exploit.com в чёрном списке" },
+        { url: "https://rosneft.ru", status: "РАЗРЕШЕНО", reason: "не в списках, разрешён по умолчанию" }
+      ];
+      
+      urlHistory = [];
+      for (let i = demoUrls.length - 1; i >= 0; i--) {
+        urlHistory.push({
+          id: Date.now() - i,
+          url: demoUrls[i].url,
+          status: demoUrls[i].status,
+          reason: demoUrls[i].reason,
+          timestamp: new Date(Date.now() - (demoUrls.length - i) * 3600000).toLocaleString()
+        });
+      }
+
+      saveData();
+      updateAllStats();
+      updateTable();
+      updateCharts();
+    }
+    // ОБНОВЛЕНИЕ ГРАФИКОВ
+    function updateCharts() {
+      const stats = getStats();
+
+      const pieCtx = document.getElementById('pieChart').getContext('2d');
+      if (pieChart) pieChart.destroy();
+      pieChart = new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+          labels: ['Разрешено (' + stats.allowed + ')', 'Заблокировано (' + stats.blocked + ')'],
+          datasets: [{
+            data: [stats.allowed, stats.blocked],
+            backgroundColor: ['#27ae60', '#c0392b'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+
+      const last10 = urlHistory.slice(0, 20).reverse();
+      const lineLabels = last10.map((_, idx) => idx + 1);
+      const lineData = last10.map(r => r.status === 'ЗАБЛОКИРОВАНО' ? 1 : 0);
+
+      const lineCtx = document.getElementById('lineChart').getContext('2d');
+      if (lineChart) lineChart.destroy();
+      lineChart = new Chart(lineCtx, {
+        type: 'line',
+        data: {
+          labels: lineLabels,
+          datasets: [{
+            label: 'Блокировка (1 = заблокировано, 0 = разрешено)',
+            data: lineData,
+            borderColor: '#c0392b',
+            backgroundColor: 'rgba(192, 57, 43, 0.1)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          scales: {
+            y: {
+              min: 0,
+              max: 1.1,
+              ticks: {
+                stepSize: 1,
+                callback: function(val) {
+                  return val === 0 ? 'Разрешено' : val === 1 ? 'Заблокировано' : '';
+                }
+              }
+            },
+            x: {
+              title: { display: true, text: 'Номер запроса (от старых к новым)' }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.raw === 1 ? 'Заблокировано' : 'Разрешено';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+    // ОБНОВЛЕНИЕ ВСЕХ ГРАФИКОВ
+    function updateAllCharts() {
+      updateCharts();
+      updateAllStats();
+    }
+    // ЭКРАНИРОВАНИЕ HTML
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+      });
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
