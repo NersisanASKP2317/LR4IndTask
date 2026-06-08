@@ -1,0 +1,46 @@
+{
+  "title": "УБИ.167 - Контейнер безопасности",
+  "uid": "ub167-monitoring",
+  "panels": [
+    {
+      "title": "Запросы в секунду",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(http_requests_total[1m])",
+          "legendFormat": "Всего запросов"
+        }
+      ]
+    },
+    {
+      "title": "Заблокированные запросы в секунду",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(ub167_blocked_total[1m])",
+          "legendFormat": "Блокировки"
+        }
+      ]
+    },
+    {
+      "title": "Доля блокировок",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(rate(ub167_blocked_total[1m])) / sum(rate(http_requests_total[1m])) * 100",
+          "legendFormat": "Процент блокировок"
+        }
+      ]
+    },
+    {
+      "title": "Время отклика API (P95)",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "P95"
+        }
+      ]
+    }
+  ]
+}
