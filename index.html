@@ -4,30 +4,45 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Контейнер УБИ.167 | Защита от заражения</title>
+  <!-- БЛОК ПОДКЛЮЧЕНИЯ ВНЕШНИХ БИБЛИОТЕК -->
+  <!-- Chart.js - библиотека для построения графиков (круговая диаграмма и линейный тренд) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style> 
+    /* БЛОК СБРОСА СТИЛЕЙ - обнуление отступов у всех элементов */
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    /* БЛОК ОСНОВНОГО ФОНА - светлый корпоративный стиль для нефтегазовой компании */
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; min-height: 100vh; padding: 20px; }
     .container { max-width: 1400px; margin: 0 auto; }
+    
+    /* БЛОК ШАПКИ ПРИЛОЖЕНИЯ - заголовок и описание */
     .header { text-align: center; padding: 30px 20px; background: #ffffff; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; }
     .header h1 { color: #1a1a2e; font-size: 28px; margin-bottom: 10px; }
     .header h1 span { color: #c0392b; }
     .header p { color: #666; font-size: 14px; }
+    
+    /* БЛОК КАРТОЧЕК СТАТИСТИКИ - адаптивная сетка 4 колонки */
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
     .stat-card { background: white; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: transform 0.2s; border: 1px solid #e0e0e0; }
     .stat-card:hover { transform: translateY(-3px); }
     .stat-card .number { font-size: 48px; font-weight: bold; }
     .stat-card .label { color: #666; margin-top: 10px; font-size: 14px; }
-    .stat-card.total .number { color: #2980b9; }
-    .stat-card.blocked .number { color: #c0392b; }
-    .stat-card.allowed .number { color: #27ae60; }
-    .stat-card.rate .number { color: #e67e22; }
+    
+    /* БЛОК ЦВЕТОВОЙ ИНДИКАЦИИ СТАТИСТИКИ */
+    .stat-card.total .number { color: #2980b9; }      /* Всего запросов - синий */
+    .stat-card.blocked .number { color: #c0392b; }     /* Заблокировано - красный */
+    .stat-card.allowed .number { color: #27ae60; }     /* Разрешено - зелёный */
+    .stat-card.rate .number { color: #e67e22; }        /* Доля блокировок - оранжевый */
+    
+    /* БЛОК ФОРМЫ ВВОДА URL */
     .add-form { background: white; border-radius: 12px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; }
     .add-form h3 { margin-bottom: 20px; color: #1a1a2e; }
     .form-group { display: flex; gap: 15px; flex-wrap: wrap; }
     .form-group input { flex: 1; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; transition: border-color 0.3s; }
     .form-group input:focus { outline: none; border-color: #2980b9; }
     .form-group select { padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; background: white; cursor: pointer; }
+    
+    /* БЛОК СТИЛЕЙ КНОПОК */
     .btn { padding: 12px 25px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: all 0.2s; font-weight: 500; }
     .btn-primary { background: #2980b9; color: white; }
     .btn-primary:hover { background: #1c638e; }
@@ -35,36 +50,60 @@
     .btn-danger:hover { background: #a93226; }
     .btn-success { background: #27ae60; color: white; }
     .btn-success:hover { background: #1e8449; }
+    
+    /* БЛОК ТАБЛИЦЫ ИСТОРИИ ПРОВЕРОК */
     .url-table { background: white; border-radius: 12px; padding: 20px; margin-bottom: 30px; overflow-x: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; }
     .url-table h3 { margin-bottom: 20px; color: #1a1a2e; }
     table { width: 100%; border-collapse: collapse; }
     th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
     th { background: #f8f9fa; font-weight: 600; color: #333; }
+    
+    /* БЛОК СТАТУСОВ В ТАБЛИЦЕ */
     .status-blocked { color: #c0392b; font-weight: bold; }
     .status-allowed { color: #27ae60; font-weight: bold; }
+    
+    /* БЛОК КНОПКИ УДАЛЕНИЯ ЗАПИСИ */
     .delete-btn { background: #c0392b; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
     .delete-btn:hover { background: #a93226; }
+    
+    /* БЛОК КОНТЕЙНЕРА ДЛЯ ГРАФИКОВ */
     .charts-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px; margin-bottom: 30px; }
     .chart-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; }
     .chart-card h3 { margin-bottom: 20px; color: #1a1a2e; text-align: center; }
     canvas { max-height: 300px; width: 100%; }
+    
+    /* БЛОК КНОПОК УПРАВЛЕНИЯ */
     .action-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+    
+    /* БЛОК ПОДВАЛА */
     .footer { text-align: center; padding: 20px; color: #888; font-size: 12px; }
+    
+    /* БЛОК СООБЩЕНИЙ ДЛЯ ПОЛЬЗОВАТЕЛЯ */
     .msg { padding: 12px 15px; margin-top: 15px; border-radius: 8px; font-size: 14px; }
     .msg.ok { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
     .msg.err { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     .msg.warn { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+    
+    /* БЛОК АДАПТИВНОЙ ВЁРСТКИ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ */
     @media (max-width: 768px) { .charts-container { grid-template-columns: 1fr; } .form-group { flex-direction: column; } }
   </style>
 </head>
 <body>
   <div class="container">
+    
+    <!-- ========================================================= -->
+    <!-- БЛОК 1: ШАПКА ПРИЛОЖЕНИЯ (отображение информации о системе) -->
+    <!-- ========================================================= -->
     <div class="header">
       <h1>🛡️Контейнер защиты <span>УБИ.167</span></h1>
       <p>Защита компьютера от заражения при посещении неблагонадежных сайтов</p>
     </div>
 
-    <!-- БЛОК ПРОВЕРКИ КОНТЕЙНЕРА-ПРИЦЕПА (Sidecar) -->
+    <!-- ========================================================= -->
+    <!-- БЛОК 2: ПРОВЕРКА КОНТЕЙНЕРА-ПРИЦЕПА (Sidecar)           -->
+    <!-- Демонстрация работы контейнера-прицепа:                   -->
+    <!-- HTTP-запросы блокируются, HTTPS-запросы проходят         -->
+    <!-- ========================================================= -->
     <div class="add-form" style="background: #e8f4f8; border-left: 5px solid #2980b9;">
       <h3>Контейнер-прицеп (Sidecar) — проверка защищённого соединения</h3>
       <p style="margin-bottom: 15px; font-size: 14px; color: #555;">Демонстрация работы контейнера-прицепа: HTTP-запросы блокируются, HTTPS — проходят.</p>
@@ -75,6 +114,11 @@
       <div id="protocolResult"></div>
     </div>
 
+    <!-- ========================================================= -->
+    <!-- БЛОК 3: КАРТОЧКИ СТАТИСТИКИ (отображение числовых данных)  -->
+    <!-- Отображают: всего запросов, разрешено, заблокировано,     -->
+    <!-- доля блокировок. Данные обновляются динамически.         -->
+    <!-- ========================================================= -->
     <div class="stats-grid">
       <div class="stat-card total"><div class="number" id="totalCount">0</div><div class="label">Всего запросов</div></div>
       <div class="stat-card allowed"><div class="number" id="allowedCount">0</div><div class="label">Разрешено</div></div>
@@ -82,6 +126,11 @@
       <div class="stat-card rate"><div class="number" id="blockRate">0%</div><div class="label">Доля блокировок</div></div>
     </div>
 
+    <!-- ========================================================= -->
+    <!-- БЛОК 4: ФОРМА ВВОДА URL И ВЫБОРА ДЕЙСТВИЯ               -->
+    <!-- Пользователь вводит URL, выбирает действие и отправляет  -->
+    <!-- на проверку                                              -->
+    <!-- ========================================================= -->
     <div class="add-form">
       <h3>Добавить URL для проверки</h3>
       <div class="form-group">
@@ -98,6 +147,11 @@
       </div>
     </div>
 
+    <!-- ========================================================= -->
+    <!-- БЛОК 5: ТАБЛИЦА ИСТОРИИ ПРОВЕРОК                        -->
+    <!-- Отображает список всех проверенных URL с указанием:      -->
+    <!-- URL, статус, причина, дата и время, кнопка удаления      -->
+    <!-- ========================================================= -->
     <div class="url-table">
       <h3>Список проверенных URL</h3>
       <div style="margin-bottom: 15px;">
@@ -107,20 +161,34 @@
       <div id="tableContainer">
         <table id="urlTable">
           <thead><tr><th>URL</th><th>Статус</th><th>Причина</th><th>Дата</th><th></th></tr></thead>
-          <tbody id="tableBody"><tr><td colspan="5" style="text-align: center;">Нет данных. Добавьте URL или загрузите демо-данные.</td></tr></tbody>
+          <tbody id="tableBody"><tr><td colspan="5" style="text-align: center;">Нет данных. Добавьте URL или загрузите демо-данные.啃?</tbody>
         </table>
       </div>
     </div>
 
+    <!-- ========================================================= -->
+    <!-- БЛОК 6: КОНТЕЙНЕР ДЛЯ ГРАФИКОВ (визуализация данных)     -->
+    <!-- Содержит два графика:                                     -->
+    <!-- - Круговая диаграмма: распределение запросов             -->
+    <!-- - Линейный график: тренд блокировок                      -->
+    <!-- ========================================================= -->
     <div class="charts-container">
       <div class="chart-card"><h3>Распределение запросов</h3><canvas id="pieChart"></canvas></div>
       <div class="chart-card"><h3>Тренд блокировок</h3><canvas id="lineChart"></canvas></div>
     </div>
 
+    <!-- ========================================================= -->
+    <!-- БЛОК 7: КНОПКИ УПРАВЛЕНИЯ                                -->
+    <!-- Кнопка принудительного обновления графиков               -->
+    <!-- ========================================================= -->
     <div class="action-buttons">
       <button class="btn btn-primary" onclick="updateAllCharts()">Обновить графики</button>
     </div>
 
+    <!-- ========================================================= -->
+    <!-- БЛОК 8: ПОДВАЛ ПРИЛОЖЕНИЯ                                -->
+    <!-- Информация о версии и компании                           -->
+    <!-- ========================================================= -->
     <div class="footer">
       <p>УБИ.167 - Контейнер обеспечения безопасности компьютера при угрозе заражения от посещения неблагонадёжных сайтов</p>
       <p>Нефтегазовая компания | Версия 2.0 (с поддержкой API проверки)</p>
@@ -128,30 +196,39 @@
   </div>
 
   <script>
+    // ==============================================================
+    // БЛОК 9: ИНИЦИАЛИЗАЦИЯ ГЛОБАЛЬНЫХ ПЕРЕМЕННЫХ
+    // whitelist - массив доверенных доменов (всегда разрешены)
+    // blacklist - массив запрещённых доменов (всегда блокируются)
+    // urlHistory - массив объектов истории проверок
+    // pieChart, lineChart - объекты графиков Chart.js
+    // ==============================================================
     let whitelist = ["google.com", "yandex.ru", "github.com", "stackoverflow.com"];
     let blacklist = ["bad-site.ru", "phishing.com", "malware.net", "exploit.com"];
     let urlHistory = [];
     let pieChart = null;
     let lineChart = null;
 
-    // Блок проверки контейнера-прицепа (Sidecar)
+    // ==============================================================
+    // БЛОК 10: ОБРАБОТЧИКИ ПРОВЕРКИ КОНТЕЙНЕРА-ПРИЦЕПА
+    // Функция проверяет работу контейнера-прицепа (Sidecar):
+    // - HTTP-запрос должен быть заблокирован
+    // - HTTPS-запрос должен быть выполнен успешно
+    // ==============================================================
     document.getElementById('checkHttp')?.addEventListener('click', function() {
       const resultDiv = document.getElementById('protocolResult');
       resultDiv.innerHTML = '<div class="msg warn">Выполняется HTTP-запрос...</div>';
+      // fetch с mode: 'no-cors' позволяет проверить блокировку HTTP-запроса
       fetch('http://httpbin.org/get', { mode: 'no-cors' })
         .catch(() => {
           resultDiv.innerHTML = '<div class="msg ok">Успех: HTTP-запрос заблокирован. Контейнер-прицеп работает корректно.</div>';
         });
-      setTimeout(() => {
-        if (resultDiv.innerHTML.includes('⏳')) {
-          resultDiv.innerHTML = '<div class="msg ok">Успех: HTTP-запрос заблокирован. Контейнер-прицеп работает корректно.</div>';
-        }
-      }, 1000);
     });
 
     document.getElementById('checkHttps')?.addEventListener('click', function() {
       const resultDiv = document.getElementById('protocolResult');
       resultDiv.innerHTML = '<div class="msg warn">⏳ Выполняется HTTPS-запрос...</div>';
+      // HTTPS-запрос должен выполниться успешно, подтверждая работу защищённого соединения
       fetch('https://httpbin.org/get')
         .then(() => {
           resultDiv.innerHTML = '<div class="msg ok">Успех: HTTPS-запрос выполнен успешно. Защищённое соединение установлено.</div>';
@@ -161,6 +238,11 @@
         });
     });
 
+    // ==============================================================
+    // БЛОК 11: ФУНКЦИЯ ЗАГРУЗКИ ДАННЫХ ИЗ localStorage
+    // При загрузке страницы восстанавливает сохранённые списки
+    // и историю проверок из браузерного хранилища
+    // ==============================================================
     function loadData() {
       const savedWhitelist = localStorage.getItem('ub167_whitelist');
       const savedBlacklist = localStorage.getItem('ub167_blacklist');
@@ -173,27 +255,43 @@
       updateCharts();
     }
 
+    // ==============================================================
+    // БЛОК 12: ФУНКЦИЯ СОХРАНЕНИЯ ДАННЫХ В localStorage
+    // Сохраняет белый список, чёрный список и историю в браузер
+    // ==============================================================
     function saveData() {
       localStorage.setItem('ub167_whitelist', JSON.stringify(whitelist));
       localStorage.setItem('ub167_blacklist', JSON.stringify(blacklist));
       localStorage.setItem('ub167_history', JSON.stringify(urlHistory));
     }
 
+    // ==============================================================
+    // БЛОК 13: ФУНКЦИЯ ЛОКАЛЬНОЙ ПРОВЕРКИ URL (isBlockedLocal)
+    // Ядро системы защиты - проверяет URL по белому и чёрному спискам
+    // Белый список имеет приоритет (если домен в обоих - разрешён)
+    // ==============================================================
     function isBlockedLocal(url) {
       const urlLower = url.toLowerCase();
+      // 1. Сначала проверяем белый список (приоритет)
       for (let domain of whitelist) {
         if (urlLower.includes(domain.toLowerCase())) {
           return { blocked: false, reason: `домен ${domain} в белом списке`, type: 'whitelist' };
         }
       }
+      // 2. Затем проверяем чёрный список
       for (let domain of blacklist) {
         if (urlLower.includes(domain.toLowerCase())) {
           return { blocked: true, reason: `домен ${domain} в чёрном списке`, type: 'blacklist' };
         }
       }
+      // 3. Если домен не найден - разрешаем по умолчанию
       return { blocked: false, reason: 'не в списках, разрешён по умолчанию', type: 'default' };
     }
 
+    // ==============================================================
+    // БЛОК 14: ФУНКЦИЯ ПРОВЕРКИ ЧЕРЕЗ ВНЕШНИЙ API (заглушка)
+    // Эмуляция обращения к серверу безопасности для проверки URL
+    // ==============================================================
     async function checkUrlViaAPI(url) {
       try {
         const response = await fetch(`/api/check?file=${encodeURIComponent(url)}`);
@@ -205,6 +303,12 @@
       }
     }
 
+    // ==============================================================
+    // БЛОК 15: ФУНКЦИИ ДОБАВЛЕНИЯ В СПИСКИ
+    // addToWhitelist - добавление домена в белый список
+    // addToBlacklist - добавление домена в чёрный список
+    // extractDomain - извлечение домена из URL (парсер)
+    // ==============================================================
     function addToWhitelist(url) {
       const domain = extractDomain(url);
       if (!whitelist.includes(domain) && domain) {
@@ -225,6 +329,8 @@
       return false;
     }
 
+    // Извлечение домена из URL - ключевая функция для обработки входных данных
+    // Парсит URL и возвращает имя домена (например, "google.com" из "https://google.com/search")
     function extractDomain(url) {
       try {
         let hostname = new URL(url).hostname;
@@ -235,6 +341,13 @@
       }
     }
 
+    // ==============================================================
+    // БЛОК 16: ОСНОВНАЯ ФУНКЦИЯ ОБРАБОТКИ ЗАПРОСА (checkUrl)
+    // Является точкой входа для всех действий пользователя:
+    // - Добавление в белый список
+    // - Добавление в чёрный список
+    // - Проверка URL через API
+    // ==============================================================
     async function checkUrl() {
       const urlInput = document.getElementById('newUrl');
       let url = urlInput.value.trim();
@@ -245,7 +358,7 @@
         url = 'http://' + url; 
       }
       
-      // Ручное добавление в белый список
+      // Ветвление по выбранному действию (паттерн "стратегия")
       if (type === 'whitelist') {
         addToWhitelist(url);
         const record = {
@@ -265,7 +378,6 @@
         return;
       }
       
-      // Ручное добавление в чёрный список
       if (type === 'blacklist') {
         addToBlacklist(url);
         const record = {
@@ -306,6 +418,11 @@
       urlInput.focus();
     }
 
+    // ==============================================================
+    // БЛОК 17: ФУНКЦИИ СБОРА СТАТИСТИКИ
+    // getStats - вычисляет total, blocked, allowed, block_rate
+    // updateAllStats - обновляет HTML-элементы карточек статистики
+    // ==============================================================
     function getStats() {
       const total = urlHistory.length;
       const blocked = urlHistory.filter(r => r.status === 'ЗАБЛОКИРОВАНО').length;
@@ -322,10 +439,17 @@
       document.getElementById('blockRate').textContent = stats.rate + '%';
     }
 
+    // ==============================================================
+    // БЛОК 18: ФУНКЦИИ УПРАВЛЕНИЯ ТАБЛИЦЕЙ
+    // updateTable - рендеринг таблицы истории проверок
+    // deleteRecord - удаление записи по ID
+    // clearAll - полная очистка истории и сброс списков
+    // loadDemoData - загрузка демонстрационных данных для тестирования
+    // ==============================================================
     function updateTable() {
       const tbody = document.getElementById('tableBody');
       if (urlHistory.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Нет данных. Добавьте URL выше или загрузите демо-данные.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Нет данных. Добавьте URL или загрузите демо-данные.啃?</tbody>';
         return;
       }
       let html = '';
@@ -391,8 +515,15 @@
       updateCharts();
     }
 
+    // ==============================================================
+    // БЛОК 19: ФУНКЦИИ ПОСТРОЕНИЯ ГРАФИКОВ
+    // updateCharts - создаёт круговую диаграмму и линейный график
+    // с использованием библиотеки Chart.js
+    // updateAllCharts - обёртка для обновления графиков и статистики
+    // ==============================================================
     function updateCharts() {
       const stats = getStats();
+      // Круговая диаграмма (распределение разрешённых/заблокированных)
       const pieCtx = document.getElementById('pieChart').getContext('2d');
       if (pieChart) pieChart.destroy();
       pieChart = new Chart(pieCtx, {
@@ -403,6 +534,8 @@
         },
         options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
       });
+      
+      // Линейный график тренда (последние 20 запросов, значения 0/1)
       const last20 = urlHistory.slice(0, 20).reverse();
       const lineCtx = document.getElementById('lineChart').getContext('2d');
       if (lineChart) lineChart.destroy();
@@ -421,7 +554,19 @@
     }
 
     function updateAllCharts() { updateCharts(); updateAllStats(); }
+    
+    // ==============================================================
+    // БЛОК 20: ФУНКЦИЯ ЗАЩИТЫ ОТ XSS-АТАК (escapeHtml)
+    // Экранирует специальные символы HTML для предотвращения
+    // внедрения вредоносного кода через поле ввода URL
+    // ==============================================================
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+    
+    // ==============================================================
+    // БЛОК 21: ЗАПУСК ПРИЛОЖЕНИЯ
+    // Вызов loadData() при загрузке страницы инициализирует
+    // все компоненты контейнера
+    // ==============================================================
     loadData();
   </script>
 </body>
